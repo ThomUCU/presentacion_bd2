@@ -3,629 +3,883 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oral — Indexación de Consultas SQL</title>
+<title>Indexación y Optimización — Db2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #0d0f14;
-    --surface: #13161e;
-    --surface2: #1a1e2a;
-    --border: #2a2f3e;
-    --accent: #4f8ef7;
-    --accent2: #2ed9c3;
-    --accent3: #f4a742;
-    --danger: #f06565;
-    --success: #4ecb71;
-    --text: #e8eaf0;
-    --muted: #7b82a0;
-    --code-bg: #0a0c12;
-  }
+:root {
+  --bg: #f4f4f4;
+  --white: #ffffff;
+  --surface: #e8e8e8;
+  --border: #d1d1d1;
+  --ibm-blue: #0f62fe;
+  --ibm-blue-light: #d0e2ff;
+  --ibm-blue-dark: #002d9c;
+  --ibm-teal: #009d9a;
+  --ibm-teal-light: #d9fbfb;
+  --ibm-red: #da1e28;
+  --ibm-red-light: #fff1f1;
+  --ibm-green: #198038;
+  --ibm-green-light: #defbe6;
+  --ibm-purple: #6929c4;
+  --ibm-purple-light: #e8daff;
+  --ibm-yellow: #f1c21b;
+  --ibm-yellow-light: #fcf4d6;
+  --text: #161616;
+  --text-2: #525252;
+  --text-3: #6f6f6f;
+  --code-bg: #282828;
+}
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
 
-  .hero {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 3.5rem 2rem 2.5rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -80px; left: 50%; transform: translateX(-50%);
-    width: 500px; height: 300px;
-    background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-badge {
-    display: inline-block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid rgba(79,142,247,0.4);
-    padding: 4px 14px;
-    border-radius: 20px;
-    margin-bottom: 1.2rem;
-  }
-  .hero h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: #fff;
-    margin-bottom: 0.5rem;
-  }
-  .hero h1 span { color: var(--accent); }
-  .hero-sub {
-    font-size: 15px;
-    color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
-  }
+/* HERO */
+.hero {
+  background: var(--ibm-blue-dark);
+  color: white;
+  padding: 4rem 2rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: 'Db2';
+  position: absolute;
+  right: -20px;
+  bottom: -40px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 160px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+  letter-spacing: -8px;
+}
+.hero-chip {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #a6c8ff;
+  padding: 4px 12px;
+  border-radius: 2px;
+  margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.8rem;
+  max-width: 700px;
+}
+.hero h1 span { color: #78a9ff; }
+.hero-desc {
+  font-size: 15px;
+  color: #c6c6c6;
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+.hero-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hq {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-left: 3px solid #78a9ff;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #e0e0e0;
+  border-radius: 0 4px 4px 0;
+  max-width: 340px;
+}
+.hq strong { color: #78a9ff; font-size: 11px; font-family: 'IBM Plex Mono', monospace; display: block; margin-bottom: 2px; }
 
-  .nav {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 1.2rem 2rem;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .nav a {
-    font-size: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    color: var(--muted);
-    text-decoration: none;
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    transition: all 0.15s;
-  }
-  .nav a:hover { color: var(--accent); border-color: var(--accent); background: rgba(79,142,247,0.08); }
+/* NAV */
+.nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text-3);
+  text-decoration: none;
+  padding: 14px 16px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.nav a:hover { color: var(--ibm-blue); border-bottom-color: var(--ibm-blue); }
 
-  .container { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem; }
+/* LAYOUT */
+.container { max-width: 980px; margin: 0 auto; padding: 3rem 1.5rem; }
 
-  .block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 2rem;
-    overflow: hidden;
-  }
-  .block-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-  .block-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--accent);
-    background: rgba(79,142,247,0.12);
-    border: 1px solid rgba(79,142,247,0.3);
-    padding: 3px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-  .block-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #fff;
-  }
-  .block-body { padding: 1.5rem; }
+/* SECTION HEADERS */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: var(--ibm-blue);
+  padding: 4px 10px;
+  border-radius: 2px;
+}
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.section-q {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ibm-blue);
+  background: var(--ibm-blue-light);
+  padding: 3px 10px;
+  border-radius: 2px;
+  margin-left: auto;
+}
 
-  p { font-size: 14.5px; color: var(--text); margin-bottom: 0.9rem; line-height: 1.7; }
-  p:last-child { margin-bottom: 0; }
+.section { background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: 2rem; margin-bottom: 2rem; }
 
-  .key-def {
-    background: var(--surface2);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 8px 8px 0;
-    padding: 0.9rem 1.2rem;
-    margin: 1rem 0;
-    font-size: 14px;
-  }
-  .key-def strong { color: var(--accent); font-weight: 500; }
+/* TYPOGRAPHY */
+p { font-size: 14.5px; color: var(--text-2); margin-bottom: 1rem; line-height: 1.75; }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--text); font-weight: 600; }
 
-  .tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin: 2px; }
-  .tag-blue { background: rgba(79,142,247,0.15); color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
-  .tag-green { background: rgba(78,203,113,0.12); color: var(--success); border: 1px solid rgba(78,203,113,0.25); }
-  .tag-red { background: rgba(240,101,101,0.12); color: var(--danger); border: 1px solid rgba(240,101,101,0.25); }
-  .tag-amber { background: rgba(244,167,66,0.12); color: var(--accent3); border: 1px solid rgba(244,167,66,0.25); }
-  .tag-teal { background: rgba(46,217,195,0.12); color: var(--accent2); border: 1px solid rgba(46,217,195,0.25); }
+h3 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 1.5rem 0 0.6rem;
+  padding-left: 10px;
+  border-left: 3px solid var(--ibm-blue);
+}
+h3:first-child { margin-top: 0; }
 
-  table.types-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-    margin-top: 1rem;
-  }
-  .types-table th {
-    text-align: left;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .types-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(42,47,62,0.6);
-    vertical-align: top;
-    color: var(--text);
-    line-height: 1.5;
-  }
-  .types-table tr:last-child td { border-bottom: none; }
-  .types-table tr:hover td { background: var(--surface2); }
-  .type-name { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; }
+/* CALLOUTS */
+.callout {
+  border-radius: 4px;
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.callout-def { background: var(--ibm-blue-light); border-left: 4px solid var(--ibm-blue); color: var(--ibm-blue-dark); }
+.callout-tip { background: var(--ibm-teal-light); border-left: 4px solid var(--ibm-teal); color: #004144; }
+.callout-warn { background: var(--ibm-yellow-light); border-left: 4px solid var(--ibm-yellow); color: #4d3800; }
+.callout-danger { background: var(--ibm-red-light); border-left: 4px solid var(--ibm-red); color: #750e13; }
+.callout-success { background: var(--ibm-green-light); border-left: 4px solid var(--ibm-green); color: #0a3c1f; }
+.callout-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+  opacity: 0.75;
+}
 
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  .col-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem;
-  }
-  .col-card-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .col-card-title.green { color: var(--success); }
-  .col-card-title.red { color: var(--danger); }
-  .col-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-  .col-card li { font-size: 13.5px; color: var(--text); padding-left: 16px; position: relative; }
-  .col-card li::before { content: '→'; position: absolute; left: 0; color: var(--muted); font-size: 11px; top: 2px; }
+/* CODE */
+pre {
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 1.2rem 1.4rem;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+}
+code, .mono {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #dde1e7;
+}
+.kw { color: #78a9ff; }
+.fn { color: #08bdba; }
+.str { color: #42be65; }
+.cm { color: #6f6f6f; font-style: italic; }
+.id { color: #dde1e7; }
+.num { color: #ff7eb6; }
+code.inline {
+  background: var(--surface);
+  color: var(--ibm-blue-dark);
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 13px;
+}
 
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.2rem 1.4rem;
-    overflow-x: auto;
-    margin: 1rem 0;
-  }
-  code {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #c9d1e0;
-  }
-  .kw { color: #4f8ef7; }
-  .fn { color: #2ed9c3; }
-  .str { color: #f4a742; }
-  .cm { color: #4a5168; font-style: italic; }
-  .id { color: #e8eaf0; }
+/* TABLES */
+table.t {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin: 1.2rem 0;
+}
+.t th {
+  background: var(--ibm-blue-dark);
+  color: white;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+}
+.t td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  vertical-align: top;
+  line-height: 1.55;
+}
+.t tr:last-child td { border-bottom: none; }
+.t tr:hover td { background: #f4f4f4; }
+.t td:first-child { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--ibm-blue-dark); font-weight: 600; white-space: nowrap; }
 
-  .source-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    background: rgba(79,142,247,0.06);
-    border: 1px solid rgba(79,142,247,0.18);
-    border-radius: 8px;
-    padding: 0.8rem 1rem;
-    margin-top: 1rem;
-    font-size: 12.5px;
-    color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .source-note::before { content: '📖'; font-size: 13px; margin-top: 1px; }
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0; }
+.col-box {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.1rem;
+}
+.col-box-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.col-box-title.blue { color: var(--ibm-blue); }
+.col-box-title.red { color: var(--ibm-red); }
+.col-box-title.green { color: var(--ibm-green); }
+.col-box ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.col-box li { font-size: 13.5px; color: var(--text-2); padding-left: 18px; position: relative; line-height: 1.5; }
+.col-box li::before { content: '▸'; position: absolute; left: 0; color: var(--text-3); font-size: 10px; top: 3px; }
 
-  .tip-box {
-    background: rgba(46,217,195,0.07);
-    border: 1px solid rgba(46,217,195,0.25);
-    border-radius: 8px;
-    padding: 0.9rem 1.1rem;
-    font-size: 13.5px;
-    color: var(--accent2);
-    margin-top: 1rem;
-  }
-  .tip-box::before { content: '💡 '; }
+/* FLOW DIAGRAM */
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+.flow-step {
+  flex: 1;
+  min-width: 110px;
+  background: var(--ibm-blue-light);
+  border: 1px solid #a6c8ff;
+  padding: 0.9rem 0.8rem;
+  text-align: center;
+  position: relative;
+}
+.flow-step:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ibm-blue);
+  font-size: 16px;
+  z-index: 1;
+  background: var(--white);
+  padding: 0 2px;
+}
+.flow-step-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ibm-blue);
+  display: block;
+  margin-bottom: 4px;
+}
+.flow-step-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ibm-blue-dark);
+  display: block;
+  line-height: 1.3;
+}
 
-  .warn-box {
-    background: rgba(244,167,66,0.07);
-    border: 1px solid rgba(244,167,66,0.25);
-    border-radius: 8px;
-    padding: 0.9rem 1.1rem;
-    font-size: 13.5px;
-    color: var(--accent3);
-    margin-top: 1rem;
-  }
-  .warn-box::before { content: '⚠️ '; }
+/* PROBLEMS LIST */
+.problems { display: flex; flex-direction: column; gap: 1rem; margin: 1rem 0; }
+.problem {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.problem-header {
+  background: var(--ibm-red-light);
+  border-bottom: 1px solid #ffd7d9;
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.problem-n {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--ibm-red);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+.problem-title { font-size: 14px; font-weight: 600; color: var(--ibm-red); }
+.problem-body { padding: 0.9rem 1rem; font-size: 13.5px; color: var(--text-2); line-height: 1.65; }
+.problem-body .fix {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border);
+  font-size: 13px;
+  color: var(--ibm-green);
+}
+.problem-body .fix::before { content: '✓ Solución: '; font-weight: 600; }
 
-  .questions-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 0.5rem;
-  }
-  .q-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.8rem 1rem;
-    font-size: 13.5px;
-    line-height: 1.5;
-  }
-  .q-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--accent);
-    display: block;
-    margin-bottom: 4px;
-  }
+/* SOURCE */
+.source {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 0.7rem 1rem;
+  margin-top: 1.5rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.source::before { content: '📖'; flex-shrink: 0; }
 
-  .timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin-top: 0.5rem;
-    position: relative;
-  }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 18px;
-    top: 10px;
-    bottom: 10px;
-    width: 1px;
-    background: var(--border);
-  }
-  .tl-item {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 8px 0;
-    position: relative;
-  }
-  .tl-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: 2px solid var(--bg);
-    margin-top: 4px;
-    flex-shrink: 0;
-    margin-left: 13px;
-    position: relative;
-    z-index: 1;
-  }
-  .tl-content { font-size: 13.5px; }
-  .tl-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+/* TAG */
+.tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 2px 8px; border-radius: 2px; margin: 2px; }
+.tag-blue { background: var(--ibm-blue-light); color: var(--ibm-blue-dark); }
+.tag-teal { background: var(--ibm-teal-light); color: #004144; }
+.tag-red { background: var(--ibm-red-light); color: var(--ibm-red); }
+.tag-green { background: var(--ibm-green-light); color: var(--ibm-green); }
+.tag-purple { background: var(--ibm-purple-light); color: var(--ibm-purple); }
+.tag-yellow { background: var(--ibm-yellow-light); color: #4d3800; }
 
-  footer {
-    text-align: center;
-    padding: 2rem;
-    border-top: 1px solid var(--border);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
+footer {
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--white);
+}
 
-  @media (max-width: 600px) {
-    .two-col, .questions-grid { grid-template-columns: 1fr; }
-    .nav { display: none; }
-  }
+@media (max-width: 640px) {
+  .two-col { grid-template-columns: 1fr; }
+  .flow { flex-direction: column; }
+  .flow-step:not(:last-child)::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
+  .hero-questions { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
+<!-- HERO -->
 <div class="hero">
-  <div class="hero-badge">Bases de Datos II · Oral</div>
-  <h1>Indexación de<br><span>Consultas SQL</span></h1>
-  <p class="hero-sub">Diseño Físico · Estructuras de Acceso · Optimización</p>
+  <div class="hero-chip">Bases de Datos II · IBM Db2 · Oral</div>
+  <h1>Indexación y Optimización<br>de <span>Consultas SQL</span></h1>
+  <p class="hero-desc">Análisis del impacto de los índices en el rendimiento, tipos disponibles en Db2, efectos de un mal diseño y funcionamiento del optimizador de consultas.</p>
+  <div class="hero-questions">
+    <div class="hq"><strong>Pregunta 1</strong>¿Cómo impacta el uso correcto de índices en el rendimiento?</div>
+    <div class="hq"><strong>Pregunta 2</strong>¿Qué tipos de índices existen en Db2?</div>
+    <div class="hq"><strong>Pregunta 3</strong>¿Cómo afecta un índice mal diseñado?</div>
+    <div class="hq"><strong>Pregunta 4</strong>¿Cómo analiza el optimizador una consulta?</div>
+  </div>
 </div>
 
+<!-- NAV -->
 <nav class="nav">
-  <a href="#b1">01 · Motivación</a>
-  <a href="#b2">02 · Qué es un índice</a>
-  <a href="#b3">03 · Tipos</a>
-  <a href="#b4">04 · PK y FK</a>
-  <a href="#b5">05 · Cuándo usar</a>
-  <a href="#b6">06 · Sintaxis SQL</a>
-  <a href="#b7">07 · Plan de ejecución</a>
-  <a href="#b8">08 · Relación con diseño</a>
-  <a href="#b9">09 · Preguntas de oral</a>
+  <a href="#s0">Contexto</a>
+  <a href="#s1">¿Qué es un índice?</a>
+  <a href="#s2">Impacto en rendimiento</a>
+  <a href="#s3">Tipos en Db2</a>
+  <a href="#s4">Mal diseño</a>
+  <a href="#s5">El optimizador</a>
+  <a href="#s6">Sintaxis Db2</a>
+  <a href="#s7">Relación con diseño</a>
 </nav>
 
 <div class="container">
 
-  <!-- BLOQUE 1 -->
-  <div class="block" id="b1">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 01</span>
-      <span class="block-title">Motivación — ¿por qué existen los índices?</span>
+<!-- SECCIÓN 0: CONTEXTO -->
+<div class="section" id="s0">
+  <div class="section-label">
+    <span class="section-num">00</span>
+    <span class="section-title">Contexto: el Diseño Físico en el ciclo de desarrollo</span>
+  </div>
+
+  <p>Los índices pertenecen al <strong>Diseño Físico</strong>, que es la etapa final del ciclo de diseño de bases de datos, posterior al Diseño Lógico y a la Normalización. Es la única etapa que es <strong>dependiente del motor de base de datos seleccionado</strong> — en este caso, IBM Db2.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <span class="flow-step-num">ETAPA 1</span>
+      <span class="flow-step-label">Diseño Conceptual (MER)</span>
     </div>
-    <div class="block-body">
-      <p>Sin índices, el DBMS realiza un <span class="tag tag-red">Full Table Scan</span>: recorre la tabla entera fila por fila para encontrar las filas que cumplen la condición. El costo crece linealmente con la cantidad de filas.</p>
-      <p>Con índices, el acceso puede pasar a ser <strong>sublineal</strong> — típicamente <span class="tag tag-blue">O(log n)</span> con estructuras de tipo B-Tree — lo que representa una mejora radical en tablas grandes.</p>
-      <div class="key-def">
-        <strong>Principio fundamental:</strong> el objetivo de un índice es minimizar la cantidad de páginas de disco que el DBMS debe leer para resolver una consulta.
-      </div>
-      <div class="source-note">Silberschatz, Korth &amp; Sudarshan — <em>Database System Concepts</em>, Cap. 11 "Indexing and Hashing". También: Ramakrishnan &amp; Gehrke — <em>Database Management Systems</em>, Cap. 8.</div>
+    <div class="flow-step">
+      <span class="flow-step-num">ETAPA 2</span>
+      <span class="flow-step-label">Diseño Lógico (tablas, PK, FK)</span>
+    </div>
+    <div class="flow-step">
+      <span class="flow-step-num">ETAPA 3</span>
+      <span class="flow-step-label">Normalización</span>
+    </div>
+    <div class="flow-step" style="background:#defbe6; border-color:#a7f0ba;">
+      <span class="flow-step-num" style="color:var(--ibm-green)">ETAPA 4</span>
+      <span class="flow-step-label" style="color:#0a3c1f">Diseño Físico → Índices</span>
     </div>
   </div>
 
-  <!-- BLOQUE 2 -->
-  <div class="block" id="b2">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 02</span>
-      <span class="block-title">¿Qué es un índice?</span>
-    </div>
-    <div class="block-body">
-      <p>Un <strong>índice</strong> es una estructura de datos auxiliar que el DBMS mantiene sobre una o más columnas de una tabla, separada del dato en sí, para acelerar la localización de filas.</p>
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-content"><span class="tl-label">Clave del índice</span>El o los atributos sobre los que se construye la estructura (ej: <code>apellido</code>, <code>fecha_nac</code>).</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-content"><span class="tl-label">Puntero</span>Referencia a la ubicación física (página de disco / RID) donde reside la fila real.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-content"><span class="tl-label">Estructura separada</span>El índice NO es la tabla. Se mantiene sincronizado automáticamente por el DBMS ante INSERT / UPDATE / DELETE.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-content"><span class="tl-label">Transparencia</span>El índice es transparente para el usuario/programador SQL. El optimizador decide si usarlo o no.</div>
-        </div>
-      </div>
-      <div class="tip-box">Analogía clásica: el índice al final de un libro. No releés el libro entero, vas directo a la página indicada.</div>
-    </div>
+  <p>El material del curso establece que en el Diseño Físico se consideran parámetros como: <em>"distribución en distintos discos, estructuras de datos disponibles, necesidades de estructuras de acceso, índices, dispersiones, bitmaps, etc."</em></p>
+
+  <div class="callout callout-def">
+    <span class="callout-label">Principio clave</span>
+    El objetivo del Diseño Físico es la <strong>eficiencia para la base de datos particular que se usará</strong>. Los índices son el principal instrumento para lograrla.
   </div>
 
-  <!-- BLOQUE 3 -->
-  <div class="block" id="b3">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 03</span>
-      <span class="block-title">Tipos de índices</span>
-    </div>
-    <div class="block-body">
-      <table class="types-table">
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Descripción</th>
-            <th>Cuándo usarlo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="type-name tag tag-blue">Clustered</span></td>
-            <td>Los datos físicos están ordenados en disco según la clave del índice. Solo puede existir <strong>uno por tabla</strong>.</td>
-            <td>PK, columnas usadas en <code>ORDER BY</code> frecuente, rangos (<code>BETWEEN</code>).</td>
-          </tr>
-          <tr>
-            <td><span class="type-name tag tag-teal">Non-clustered</span></td>
-            <td>Estructura separada con punteros a los datos. Los datos no están ordenados físicamente según este índice. Pueden existir <strong>varios por tabla</strong>.</td>
-            <td>FK, columnas en <code>WHERE</code> o <code>JOIN</code> frecuentes.</td>
-          </tr>
-          <tr>
-            <td><span class="type-name tag tag-amber">Único (UNIQUE)</span></td>
-            <td>Garantiza que no existan valores duplicados en la columna indexada. Implica una constraint de unicidad.</td>
-            <td>Claves candidatas, atributos con restricción de unicidad.</td>
-          </tr>
-          <tr>
-            <td><span class="type-name tag tag-green">Compuesto</span></td>
-            <td>Índice sobre dos o más columnas. El orden de las columnas importa: es útil para consultas que filtran por el prefijo izquierdo del índice.</td>
-            <td>Consultas con múltiples condiciones en <code>WHERE</code> sobre las mismas columnas.</td>
-          </tr>
-          <tr>
-            <td><span class="type-name tag tag-red">Bitmap</span></td>
-            <td>Usa vectores de bits, uno por valor distinto. Muy eficiente para columnas de <strong>baja cardinalidad</strong>. Costoso en actualizaciones.</td>
-            <td>Género, estado civil, país — columnas con pocos valores distintos. Típico en Data Warehouses.</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="source-note">Silberschatz — Cap. 11.1 "Basic Concepts". Ramakrishnan — Cap. 8.2 "B+ Tree Index". Coronel &amp; Morris — <em>Database Systems</em>, Cap. 11.</div>
-    </div>
-  </div>
-
-  <!-- BLOQUE 4 -->
-  <div class="block" id="b4">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 04</span>
-      <span class="block-title">Índices y claves (PK / FK) — conexión con el curso</span>
-    </div>
-    <div class="block-body">
-      <p>Este punto conecta directamente con el material del curso. En el Diseño Físico se consideran las <em>"necesidades de estructuras de acceso, índices, dispersiones, bitmaps"</em> como parte de la etapa posterior al Diseño Lógico.</p>
-      <div class="two-col">
-        <div class="col-card">
-          <div class="col-card-title green">✓ Clave primaria (PK)</div>
-          <ul>
-            <li>El DBMS <strong>indexa la PK automáticamente</strong> (generalmente como índice clustered).</li>
-            <li>El material del curso indica: <em>"los DBMS indexan la clave primaria"</em>.</li>
-            <li>Por eso se prefieren PKs simples: menor tamaño del índice, búsquedas más rápidas.</li>
-          </ul>
-        </div>
-        <div class="col-card">
-          <div class="col-card-title green">✓ Clave foránea (FK)</div>
-          <ul>
-            <li>Las FK son candidatas naturales a índices non-clustered.</li>
-            <li>Se usan constantemente en <code>JOIN</code> entre tablas.</li>
-            <li>Un índice en la FK del lado "muchos" puede cambiar drásticamente el costo del JOIN.</li>
-          </ul>
-        </div>
-      </div>
-      <div class="source-note">Material del curso — BDII_ML_01 Diseño Lógico: <em>"Eficiencia en los accesos, por lo general los DBMS indexan la clave primaria"</em> y <em>"Necesidades de estructuras de acceso, índices, dispersiones, bitmaps"</em>.</div>
-    </div>
-  </div>
-
-  <!-- BLOQUE 5 -->
-  <div class="block" id="b5">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 05</span>
-      <span class="block-title">Cuándo usar índices — y cuándo no</span>
-    </div>
-    <div class="block-body">
-      <div class="two-col">
-        <div class="col-card">
-          <div class="col-card-title green">✓ Conviene indexar</div>
-          <ul>
-            <li>Columnas en <code>WHERE</code> con alta selectividad (pocos resultados).</li>
-            <li>Columnas usadas en <code>JOIN</code> frecuentes (especialmente FK).</li>
-            <li>Columnas en <code>ORDER BY</code> o <code>GROUP BY</code>.</li>
-            <li>Tablas grandes con lecturas frecuentes.</li>
-          </ul>
-        </div>
-        <div class="col-card">
-          <div class="col-card-title red">✗ No conviene / perjudica</div>
-          <ul>
-            <li>Columnas de baja cardinalidad (booleanos, pocos valores → usar Bitmap si aplica).</li>
-            <li>Consultas que devuelven gran porcentaje de la tabla (full scan puede ser más barato).</li>
-            <li>Tablas pequeñas.</li>
-            <li>Tablas con muchas escrituras (<code>INSERT/UPDATE/DELETE</code> frecuentes).</li>
-          </ul>
-        </div>
-      </div>
-      <div class="warn-box">Costo de mantenimiento: cada modificación de datos obliga al DBMS a actualizar también todos los índices de esa tabla. Índices innecesarios penalizan las escrituras.</div>
-    </div>
-  </div>
-
-  <!-- BLOQUE 6 -->
-  <div class="block" id="b6">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 06</span>
-      <span class="block-title">Sintaxis SQL</span>
-    </div>
-    <div class="block-body">
-      <pre><code><span class="cm">-- Índice simple sobre una columna</span>
-<span class="kw">CREATE INDEX</span> <span class="id">idx_apellido</span> <span class="kw">ON</span> <span class="id">Empleado</span>(<span class="id">apellido</span>);
-
-<span class="cm">-- Índice con restricción de unicidad</span>
-<span class="kw">CREATE UNIQUE INDEX</span> <span class="id">idx_ci</span> <span class="kw">ON</span> <span class="id">Empleado</span>(<span class="id">ci</span>);
-
-<span class="cm">-- Índice compuesto (columna1 es el prefijo izquierdo)</span>
-<span class="kw">CREATE INDEX</span> <span class="id">idx_dep_sal</span> <span class="kw">ON</span> <span class="id">Empleado</span>(<span class="id">departamento</span>, <span class="id">salario</span>);
-
-<span class="cm">-- Eliminar un índice</span>
-<span class="kw">DROP INDEX</span> <span class="id">idx_apellido</span>;
-
-<span class="cm">-- Ver plan de ejecución (PostgreSQL / MySQL)</span>
-<span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="id">Empleado</span> <span class="kw">WHERE</span> <span class="id">apellido</span> = <span class="str">'García'</span>;</code></pre>
-      <p style="font-size:13px; color:var(--muted);">En SQL Server se usa <code>CREATE CLUSTERED INDEX</code> / <code>CREATE NONCLUSTERED INDEX</code>. En Oracle se usa <code>CREATE INDEX ... BITMAP</code> para índices bitmap.</p>
-    </div>
-  </div>
-
-  <!-- BLOQUE 7 -->
-  <div class="block" id="b7">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 07</span>
-      <span class="block-title">Plan de ejecución y Query Optimizer</span>
-    </div>
-    <div class="block-body">
-      <p>El <span class="tag tag-blue">Query Optimizer</span> es el componente del DBMS que analiza la consulta SQL y decide <em>cómo</em> ejecutarla: si usa un índice, qué tipo de join aplica, en qué orden accede a las tablas. El programador escribe <em>qué</em> quiere; el optimizador decide <em>cómo</em> obtenerlo.</p>
-      <div class="key-def">
-        <strong>EXPLAIN / EXPLAIN PLAN:</strong> comando que muestra el plan de ejecución elegido por el optimizador sin ejecutar realmente la consulta. Permite diagnosticar si se están usando índices o no.
-      </div>
-      <p>Términos importantes que pueden aparecer en un plan de ejecución:</p>
-      <div style="display:flex; flex-wrap:wrap; gap:6px; margin:0.5rem 0 1rem;">
-        <span class="tag tag-green">Seq Scan — full table scan</span>
-        <span class="tag tag-blue">Index Scan — usa el índice</span>
-        <span class="tag tag-blue">Index Only Scan — solo lee el índice</span>
-        <span class="tag tag-teal">Nested Loop — join anidado</span>
-        <span class="tag tag-teal">Hash Join — join por hash</span>
-        <span class="tag tag-amber">Merge Join — join por orden</span>
-      </div>
-      <div class="tip-box">Si un índice existe pero el optimizador no lo usa, puede ser porque la tabla es pequeña o la selectividad es baja. El optimizador calcula el costo estimado de cada alternativa y elige la menor.</div>
-      <div class="source-note">Silberschatz — Cap. 12 "Query Processing". Ramakrishnan — Cap. 12 "Evaluation of Relational Operators".</div>
-    </div>
-  </div>
-
-  <!-- BLOQUE 8 -->
-  <div class="block" id="b8">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 08</span>
-      <span class="block-title">Relación con el diseño conceptual y lógico</span>
-    </div>
-    <div class="block-body">
-      <p>Los índices pertenecen al <span class="tag tag-amber">Diseño Físico</span>, que es la etapa posterior al Diseño Lógico. Es la única etapa que es dependiente del motor de base de datos seleccionado.</p>
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot" style="background:var(--accent2)"></div>
-          <div class="tl-content"><span class="tl-label">Diseño Conceptual (MER)</span>Define entidades, relaciones, atributos e identificadores. Un buen modelado facilita identificar qué columnas serán críticas.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot" style="background:var(--accent)"></div>
-          <div class="tl-content"><span class="tl-label">Diseño Lógico</span>Se baja el MER a tablas. Las PK y FK quedan definidas. El DBMS indexará automáticamente la PK.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot" style="background:var(--accent3)"></div>
-          <div class="tl-content"><span class="tl-label">Normalización</span>Reduce redundancia pero puede generar más JOINs. Los índices en FK compensan ese costo adicional de lectura.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot" style="background:var(--danger)"></div>
-          <div class="tl-content"><span class="tl-label">Diseño Físico</span>Aquí se crean índices adicionales según los patrones de acceso reales. Se consideran distribución en disco, dispersiones, bitmaps y demás parámetros del DBMS.</div>
-        </div>
-      </div>
-      <div class="source-note">Material del curso — BDII_ML_01 Diseño Lógico: etapa de Diseño Físico y parámetros del SGBD.</div>
-    </div>
-  </div>
-
-  <!-- BLOQUE 9 -->
-  <div class="block" id="b9">
-    <div class="block-header">
-      <span class="block-num">BLOQUE 09</span>
-      <span class="block-title">Preguntas típicas de oral</span>
-    </div>
-    <div class="block-body">
-      <div class="questions-grid">
-        <div class="q-item"><span class="q-num">PREGUNTA 01</span>¿Qué es un índice y para qué sirve?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 02</span>¿Cuál es la diferencia entre índice clustered y non-clustered?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 03</span>¿Cuántos índices clustered puede tener una tabla? ¿Por qué?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 04</span>¿Qué pasa si creo un índice en una columna con pocos valores distintos?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 05</span>¿Por qué la PK siempre está indexada?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 06</span>¿Qué relación hay entre los índices y los JOINs?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 07</span>¿Qué es el costo de mantenimiento de un índice?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 08</span>¿Qué hace el Query Optimizer con los índices?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 09</span>¿En qué etapa del diseño se definen los índices y por qué?</div>
-        <div class="q-item"><span class="q-num">PREGUNTA 10</span>¿Cuándo un índice puede perjudicar el rendimiento?</div>
-      </div>
-    </div>
-  </div>
-
+  <div class="source">Material del curso — BDII_ML_01 Diseño Lógico, sección "Diseño Físico"</div>
 </div>
 
+<!-- SECCIÓN 1: QUÉ ES UN ÍNDICE -->
+<div class="section" id="s1">
+  <div class="section-label">
+    <span class="section-num">01</span>
+    <span class="section-title">¿Qué es un índice?</span>
+  </div>
+
+  <p>Un <strong>índice</strong> es una estructura de datos auxiliar que el DBMS mantiene sobre una o más columnas de una tabla, separada de los datos en sí, con el propósito de acelerar la localización de filas.</p>
+
+  <div class="callout callout-def">
+    <span class="callout-label">Definición técnica</span>
+    En Db2, un índice es un objeto de base de datos que proporciona un camino de acceso alternativo y eficiente a los datos de una tabla, basado en los valores de una o más columnas clave. Internamente se implementa como un <strong>árbol B+ (B+ Tree)</strong>.
+  </div>
+
+  <h3>Componentes de un índice</h3>
+  <table class="t">
+    <thead><tr><th>Componente</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td>Clave del índice</td><td>La columna o columnas sobre las que se construye la estructura. Los valores se almacenan ordenados.</td></tr>
+      <tr><td>Página hoja (leaf page)</td><td>Nivel más bajo del árbol B+. Contiene los valores de la clave más punteros a las filas de la tabla (RIDs — Row IDs).</td></tr>
+      <tr><td>Páginas no-hoja</td><td>Niveles intermedios que permiten navegar el árbol eficientemente desde la raíz.</td></tr>
+      <tr><td>RID (Row ID)</td><td>Identificador físico de una fila: número de página + posición de la fila en esa página.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <span class="callout-label">Analogía didáctica</span>
+    Un índice funciona como el índice al final de un libro: no releés el libro entero, vas directo a la página indicada. La diferencia es que en Db2 el "índice" se mantiene automáticamente y sincronizado con cada cambio de datos.
+  </div>
+
+  <div class="callout callout-warn">
+    <span class="callout-label">Punto importante</span>
+    El índice es <strong>transparente al programador SQL</strong>. El Query Optimizer de Db2 decide en tiempo de compilación si usar o no el índice — el programador escribe <em>qué</em> quiere, el optimizador decide <em>cómo</em> obtenerlo.
+  </div>
+</div>
+
+<!-- SECCIÓN 2: IMPACTO EN RENDIMIENTO -->
+<div class="section" id="s2">
+  <div class="section-label">
+    <span class="section-num">02</span>
+    <span class="section-title">Impacto en el rendimiento de las consultas</span>
+    <span class="section-q">Pregunta 1</span>
+  </div>
+
+  <h3>Sin índice: Table Space Scan (TBSCAN)</h3>
+  <p>Cuando Db2 no dispone de un índice útil, ejecuta un <strong>Table Space Scan</strong>: lee secuencialmente <em>todas</em> las páginas de la tabla, fila por fila, hasta encontrar las que satisfacen la condición del <code class="inline">WHERE</code>. El costo crece linealmente con el tamaño de la tabla.</p>
+
+  <h3>Con índice: Index Scan (IXSCAN)</h3>
+  <p>Db2 navega el árbol B+ del índice en tiempo <strong>O(log n)</strong>, ubica las hojas con los valores buscados, obtiene los RIDs correspondientes, y accede directamente a esas páginas de datos. Para una tabla de 10 millones de filas, la diferencia puede ser de segundos vs milisegundos.</p>
+
+  <div class="two-col">
+    <div class="col-box">
+      <div class="col-box-title red">✗ TBSCAN — sin índice</div>
+      <ul>
+        <li>Lee todas las páginas de la tabla.</li>
+        <li>Costo O(n) — lineal con el volumen.</li>
+        <li>Necesario cuando no hay índice útil o la consulta retorna muchas filas.</li>
+        <li>En Db2 aparece como <code class="inline">TBSCAN</code> en el plan de acceso.</li>
+      </ul>
+    </div>
+    <div class="col-box">
+      <div class="col-box-title green">✓ IXSCAN — con índice</div>
+      <ul>
+        <li>Navega el árbol B+ hasta la hoja buscada.</li>
+        <li>Costo O(log n) — logarítmico.</li>
+        <li>Especialmente eficiente en consultas de alta selectividad.</li>
+        <li>En Db2 aparece como <code class="inline">IXSCAN</code> en el plan de acceso.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Index Only Access — el caso óptimo</h3>
+  <p>Cuando todas las columnas que necesita la consulta están en el índice (clave + columnas incluidas), Db2 puede resolver la consulta <strong>leyendo solo el índice</strong>, sin tocar la tabla de datos. Esto se llama <strong>Index Only Access</strong> y es el escenario de mejor rendimiento posible.</p>
+
+  <h3>Unidad de costo en Db2: el Timeron</h3>
+  <p>Db2 mide el costo de los planes de acceso en <strong>Timerons</strong>, una unidad interna que combina CPU y I/O estimados. El optimizador compara los Timerons de cada plan alternativo y elige el de menor costo. Este valor es visible en el output de <code class="inline">EXPLAIN</code>.</p>
+
+  <div class="callout callout-tip">
+    <span class="callout-label">Regla general</span>
+    Un índice es beneficioso cuando la consulta es <strong>altamente selectiva</strong> — es decir, cuando retorna un pequeño porcentaje de las filas totales de la tabla. Si una consulta retorna el 30% o más de las filas, Db2 puede preferir el TBSCAN porque leer el índice + las páginas de datos puede ser más costoso que leer la tabla directamente.
+  </div>
+
+  <div class="source">IBM Db2 11.5 Documentation — "Access paths" y "Index usage". Silberschatz et al. — Database System Concepts, Cap. 11.</div>
+</div>
+
+<!-- SECCIÓN 3: TIPOS DE ÍNDICES EN Db2 -->
+<div class="section" id="s3">
+  <div class="section-label">
+    <span class="section-num">03</span>
+    <span class="section-title">Tipos de índices en Db2</span>
+    <span class="section-q">Pregunta 2</span>
+  </div>
+
+  <p>Db2 ofrece varios tipos de índices, cada uno optimizado para diferentes patrones de acceso. Todos se basan en una estructura B+ Tree, pero difieren en cómo se usan y cuándo conviene aplicarlos.</p>
+
+  <table class="t">
+    <thead>
+      <tr><th>Tipo</th><th>Descripción</th><th>Cuándo usarlo</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Regular (B+ Tree)</td>
+        <td>El índice estándar de Db2. Estructura de árbol B+ sobre una o más columnas. Es non-clustering por defecto.</td>
+        <td>Columnas en <code class="inline">WHERE</code>, <code class="inline">JOIN</code>, <code class="inline">ORDER BY</code> frecuentes.</td>
+      </tr>
+      <tr>
+        <td>UNIQUE</td>
+        <td>B+ Tree con constraint de unicidad. Db2 crea uno automáticamente al definir una <code class="inline">PRIMARY KEY</code> o una constraint <code class="inline">UNIQUE</code>.</td>
+        <td>Claves primarias, claves candidatas, atributos con unicidad requerida.</td>
+      </tr>
+      <tr>
+        <td>Clustering Index</td>
+        <td>Indica a Db2 el <strong>orden físico preferido de inserción</strong> de las filas. Solo puede existir <strong>uno por tabla</strong>. Maximiza la localidad de acceso para rangos y ordenamientos.</td>
+        <td><code class="inline">ORDER BY</code>, consultas de rango (<code class="inline">BETWEEN</code>), accesos secuenciales frecuentes.</td>
+      </tr>
+      <tr>
+        <td>Índice Compuesto</td>
+        <td>Índice sobre dos o más columnas. El <strong>orden de las columnas importa</strong>: un índice <code class="inline">(A, B)</code> ayuda a consultas que filtran por <code class="inline">A</code> o por <code class="inline">(A, B)</code>, pero <em>no</em> a consultas que solo filtran por <code class="inline">B</code> (regla del prefijo izquierdo).</td>
+        <td>Consultas con múltiples condiciones en <code class="inline">WHERE</code> sobre las mismas columnas.</td>
+      </tr>
+      <tr>
+        <td>Include Columns</td>
+        <td>Índice con columnas adicionales almacenadas solo en las páginas hoja (no en la clave). Permite <strong>Index Only Access</strong> sin ampliar la clave del índice.</td>
+        <td>Queries de alta frecuencia donde todas las columnas proyectadas pueden meterse en el índice.</td>
+      </tr>
+      <tr>
+        <td>Index on Expression</td>
+        <td>Índice sobre una expresión calculada, como <code class="inline">UPPER(apellido)</code> o <code class="inline">YEAR(fecha)</code>. Db2 precalcula y almacena el resultado.</td>
+        <td>Cuando las consultas aplican funciones sobre columnas en el <code class="inline">WHERE</code>.</td>
+      </tr>
+      <tr>
+        <td>Partitioned Index</td>
+        <td>Para tablas particionadas (Range Partitioning). Puede ser <strong>local</strong> (un índice por partición) o <strong>global</strong> (cubre todas las particiones).</td>
+        <td>Tablas muy grandes particionadas por rango de fechas, regiones, etc.</td>
+      </tr>
+      <tr>
+        <td>XML Index</td>
+        <td>Índice sobre columnas de tipo <code class="inline">XML</code>, usando expresiones XPath para indexar nodos o valores específicos del documento.</td>
+        <td>Bases de datos con datos semiestructurados en columnas XML.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-def">
+    <span class="callout-label">Clustering vs Non-Clustering — diferencia clave</span>
+    Un <strong>clustering index</strong> controla el orden físico de almacenamiento de las filas. Un <strong>non-clustering index</strong> apunta a filas que pueden estar dispersas en cualquier página de la tabla. Para accesos de rango, el clustering reduce drásticamente los I/Os necesarios porque las filas están contiguas en disco.
+  </div>
+
+  <div class="callout callout-warn">
+    <span class="callout-label">Atención — error común</span>
+    En Db2, al definir una <code class="inline">PRIMARY KEY</code>, se crea automáticamente un índice UNIQUE — pero <strong>no necesariamente clustering</strong>. Si querés que la PK también sea clustering, hay que especificarlo explícitamente o usar <code class="inline">ORGANIZE BY</code>.
+  </div>
+
+  <div class="source">IBM Db2 11.5 Knowledge Center — "Types of indexes". IBM Redbooks — DB2 Performance Tuning.</div>
+</div>
+
+<!-- SECCIÓN 4: MAL DISEÑO -->
+<div class="section" id="s4">
+  <div class="section-label">
+    <span class="section-num">04</span>
+    <span class="section-title">¿Cómo afecta un índice mal diseñado?</span>
+    <span class="section-q">Pregunta 3</span>
+  </div>
+
+  <p>Un índice mal diseñado puede ser tan perjudicial como no tener índice. Puede degradar el rendimiento tanto en lecturas como en escrituras, o directamente ser ignorado por el optimizador. Los cinco problemas más comunes en Db2:</p>
+
+  <div class="problems">
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-n">PROBLEMA 01</span>
+        <span class="problem-title">Índice en columna de baja cardinalidad</span>
+      </div>
+      <div class="problem-body">
+        Si se crea un índice sobre una columna con pocos valores distintos — como <code class="inline">genero</code> (M/F) o <code class="inline">estado</code> (activo/inactivo) — el índice no filtra suficientemente. Una búsqueda por <code class="inline">WHERE genero = 'M'</code> retorna ~50% de la tabla. En ese caso, el TBSCAN suele ser más eficiente que navegar el índice + buscar las filas dispersas en disco.
+        <div class="fix">Para columnas de baja cardinalidad en Db2, evaluar el uso de <strong>índices bitmap</strong> (disponibles en entornos DPF/warehouse) o simplemente no indexar.</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-n">PROBLEMA 02</span>
+        <span class="problem-title">Orden incorrecto en índice compuesto</span>
+      </div>
+      <div class="problem-body">
+        Un índice compuesto <code class="inline">(departamento, salario)</code> solo es útil si la consulta filtra primero por <code class="inline">departamento</code> (el prefijo izquierdo). Una consulta con <code class="inline">WHERE salario &gt; 5000</code> sin filtrar por <code class="inline">departamento</code> <strong>no puede usar este índice</strong> eficientemente. El orden de las columnas debe reflejar el orden de los filtros más frecuentes.
+        <div class="fix">Diseñar el índice compuesto con la columna de mayor selectividad y uso más frecuente como primera columna.</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-n">PROBLEMA 03</span>
+        <span class="problem-title">Exceso de índices en tablas con muchas escrituras</span>
+      </div>
+      <div class="problem-body">
+        Cada operación de <code class="inline">INSERT</code>, <code class="inline">UPDATE</code> o <code class="inline">DELETE</code> obliga a Db2 a actualizar <em>todos</em> los índices de la tabla afectada. Una tabla con 10 índices innecesarios puede tener un rendimiento de escritura significativamente peor que una con 2 índices bien diseñados. El costo de mantenimiento es proporcional a la cantidad de índices y a la frecuencia de modificaciones.
+        <div class="fix">Crear solo los índices que se demuestren necesarios mediante análisis de workload. Usar <strong>Design Advisor</strong> de Db2 para recomendaciones basadas en workload real.</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-n">PROBLEMA 04</span>
+        <span class="problem-title">Estadísticas desactualizadas (RUNSTATS no ejecutado)</span>
+      </div>
+      <div class="problem-body">
+        El optimizador de Db2 basa sus decisiones en las <strong>estadísticas del catálogo</strong> (<code class="inline">SYSCAT.TABLES</code>, <code class="inline">SYSCAT.COLUMNS</code>, <code class="inline">SYSCAT.INDEXES</code>). Si los datos crecieron o cambiaron significativamente y no se ejecutó <code class="inline">RUNSTATS</code>, el optimizador puede elegir un plan subóptimo — por ejemplo, ignorar un índice bueno porque las estadísticas dicen que la tabla es pequeña, cuando en realidad tiene millones de filas.
+        <div class="fix">Ejecutar <code class="inline">RUNSTATS ON TABLE schema.tabla WITH DISTRIBUTION AND INDEXES ALL</code> periódicamente, especialmente después de cargas masivas de datos.</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <div class="problem-header">
+        <span class="problem-n">PROBLEMA 05</span>
+        <span class="problem-title">Clustering degradado por falta de REORG</span>
+      </div>
+      <div class="problem-body">
+        Con el tiempo, a medida que se insertan y eliminan filas, el <strong>clustering index</strong> pierde su efectividad: las nuevas filas se insertan en páginas de overflow, lejos de sus "vecinas lógicas". El índice sigue existiendo, pero ya no garantiza localidad física. Db2 lo mide con el <strong>Cluster Ratio</strong> — si cae por debajo del 80%, el índice clustering está degradado.
+        <div class="fix">Ejecutar <code class="inline">REORG TABLE schema.tabla</code> para reorganizar físicamente las páginas de datos según el clustering index.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="source">IBM Db2 11.5 Documentation — "Index design guidelines". IBM Redbooks — DB2 9 Performance Tuning, Cap. 5.</div>
+</div>
+
+<!-- SECCIÓN 5: EL OPTIMIZADOR -->
+<div class="section" id="s5">
+  <div class="section-label">
+    <span class="section-num">05</span>
+    <span class="section-title">¿Cómo analiza el optimizador una consulta?</span>
+    <span class="section-q">Pregunta 4</span>
+  </div>
+
+  <p>El <strong>DB2 Query Optimizer</strong> es un optimizador <strong>basado en costos (Cost-Based Optimizer — CBO)</strong>. A diferencia de los optimizadores basados en reglas, el CBO evalúa múltiples planes de acceso posibles y elige el de menor costo estimado, medido en <strong>Timerons</strong>.</p>
+
+  <h3>Fases del proceso de optimización en Db2</h3>
+
+  <div class="flow" style="flex-direction:column; gap:4px;">
+    <div class="flow-step" style="text-align:left; padding:0.8rem 1.1rem; display:flex; align-items:flex-start; gap:12px;">
+      <span style="background:var(--ibm-blue); color:white; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; padding:3px 8px; border-radius:2px; white-space:nowrap; margin-top:2px;">FASE 1</span>
+      <div><strong>Parse y validación:</strong> Db2 analiza la sintaxis SQL, valida objetos contra el catálogo del sistema y construye un árbol de operaciones lógicas.</div>
+    </div>
+    <div class="flow-step" style="text-align:left; padding:0.8rem 1.1rem; display:flex; align-items:flex-start; gap:12px;">
+      <span style="background:var(--ibm-blue); color:white; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; padding:3px 8px; border-radius:2px; white-space:nowrap; margin-top:2px;">FASE 2</span>
+      <div><strong>Rewrite (reescritura):</strong> aplica transformaciones algebraicas: push de predicados (acercar los filtros a la tabla), eliminación de subqueries redundantes, merge de vistas, etc.</div>
+    </div>
+    <div class="flow-step" style="text-align:left; padding:0.8rem 1.1rem; display:flex; align-items:flex-start; gap:12px;">
+      <span style="background:var(--ibm-blue); color:white; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; padding:3px 8px; border-radius:2px; white-space:nowrap; margin-top:2px;">FASE 3</span>
+      <div><strong>Consulta de estadísticas:</strong> lee las estadísticas del catálogo (<code class="inline">SYSCAT.TABLES</code>, <code class="inline">SYSCAT.COLDIST</code>, <code class="inline">SYSCAT.INDEXES</code>) para estimar cardinalidades — cuántas filas retornará cada operación.</div>
+    </div>
+    <div class="flow-step" style="text-align:left; padding:0.8rem 1.1rem; display:flex; align-items:flex-start; gap:12px;">
+      <span style="background:var(--ibm-blue); color:white; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; padding:3px 8px; border-radius:2px; white-space:nowrap; margin-top:2px;">FASE 4</span>
+      <div><strong>Enumeración de planes:</strong> genera múltiples planes de acceso alternativos, variando el tipo de scan (TBSCAN vs IXSCAN), el método de join (NLJOIN, HSJOIN, MGJOIN) y el orden de acceso a las tablas.</div>
+    </div>
+    <div class="flow-step" style="text-align:left; padding:0.8rem 1.1rem; display:flex; align-items:flex-start; gap:12px;">
+      <span style="background:var(--ibm-blue); color:white; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; padding:3px 8px; border-radius:2px; white-space:nowrap; margin-top:2px;">FASE 5</span>
+      <div><strong>Estimación de costo:</strong> calcula el costo de cada plan en Timerons, considerando I/O de páginas, uso de CPU, memoria disponible (bufferpool) y paralelismo.</div>
+    </div>
+    <div class="flow-step" style="text-align:left; padding:0.8rem 1.1rem; display:flex; align-items:flex-start; gap:12px; background:var(--ibm-green-light); border-color:#a7f0ba;">
+      <span style="background:var(--ibm-green); color:white; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; padding:3px 8px; border-radius:2px; white-space:nowrap; margin-top:2px;">FASE 6</span>
+      <div><strong>Selección del plan:</strong> elige el plan de menor costo estimado en Timerons. Este es el plan que Db2 ejecuta.</div>
+    </div>
+  </div>
+
+  <h3>Operadores en el plan de acceso de Db2</h3>
+  <table class="t">
+    <thead><tr><th>Operador</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td>TBSCAN</td><td>Table Space Scan — lectura secuencial completa de la tabla.</td></tr>
+      <tr><td>IXSCAN</td><td>Index Scan — navegación del árbol B+ del índice.</td></tr>
+      <tr><td>FETCH</td><td>Accede a las páginas de datos usando los RIDs obtenidos del IXSCAN.</td></tr>
+      <tr><td>RIDSCN</td><td>RID Scan — combina múltiples índices usando operaciones de AND/OR sobre conjuntos de RIDs.</td></tr>
+      <tr><td>NLJOIN</td><td>Nested Loop Join — para cada fila del outer, busca en el inner.</td></tr>
+      <tr><td>HSJOIN</td><td>Hash Join — construye una tabla hash con el inner, sondea con el outer.</td></tr>
+      <tr><td>MGJOIN</td><td>Merge Join — requiere ambas entradas ordenadas; eficiente en datos ya ordenados.</td></tr>
+      <tr><td>SORT</td><td>Ordenamiento requerido. Indica que no había índice disponible para el ORDER BY/GROUP BY.</td></tr>
+      <tr><td>GRPBY</td><td>Group By — agregación de filas.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cómo ver el plan de acceso en Db2</h3>
+  <pre><code><span class="cm">-- Paso 1: habilitar las tablas EXPLAIN (una sola vez por esquema)</span>
+<span class="fn">db2</span> <span class="str">'CALL SYSPROC.SYSINSTALLOBJECTS(</span><span class="str">''EXPLAIN''</span><span class="str">, ''C'', NULL, NULL)'</span>
+
+<span class="cm">-- Paso 2: capturar el plan de una consulta</span>
+<span class="kw">EXPLAIN PLAN FOR</span>
+  <span class="kw">SELECT</span> <span class="id">e.nombre</span>, <span class="id">d.nombre</span>
+  <span class="kw">FROM</span> <span class="id">Empleado</span> <span class="id">e</span>
+  <span class="kw">JOIN</span> <span class="id">Departamento</span> <span class="id">d</span> <span class="kw">ON</span> <span class="id">e.id_dep</span> = <span class="id">d.id</span>
+  <span class="kw">WHERE</span> <span class="id">e.salario</span> &gt; <span class="num">50000</span>;
+
+<span class="cm">-- Paso 3: consultar el plan generado</span>
+<span class="kw">SELECT</span> <span class="id">operator_type</span>, <span class="id">total_cost</span>, <span class="id">object_name</span>
+<span class="kw">FROM</span> <span class="id">EXPLAIN_OPERATOR</span>
+<span class="kw">ORDER BY</span> <span class="id">operator_id</span>;</code></pre>
+
+  <div class="callout callout-tip">
+    <span class="callout-label">Herramienta gráfica</span>
+    Db2 también provee <strong>Visual Explain</strong> dentro de IBM Data Studio, que muestra el plan de acceso como un grafo visual con los costos de cada operador. Es la forma más práctica de analizar consultas complejas.
+  </div>
+
+  <div class="callout callout-warn">
+    <span class="callout-label">Niveles de optimización en Db2</span>
+    Db2 tiene 7 niveles de optimización (<code class="inline">OPTLEVEL 0</code> a <code class="inline">OPTLEVEL 9</code>, siendo 5 el default). En nivel 0 no usa índices y no reescribe. En nivel 5 aplica todas las transformaciones estándar. En nivel 9 realiza búsqueda exhaustiva de planes (muy costoso en compilación, para queries críticas).
+  </div>
+
+  <div class="source">IBM Db2 11.5 Knowledge Center — "DB2 optimizer" y "Access plan". IBM Redbooks — DB2 Explain Made Simple.</div>
+</div>
+
+<!-- SECCIÓN 6: SINTAXIS Db2 -->
+<div class="section" id="s6">
+  <div class="section-label">
+    <span class="section-num">06</span>
+    <span class="section-title">Sintaxis SQL en Db2</span>
+  </div>
+
+  <pre><code><span class="cm">-- Índice regular (non-clustering)</span>
+<span class="kw">CREATE INDEX</span> <span class="id">schema.idx_apellido</span>
+  <span class="kw">ON</span> <span class="id">schema.Empleado</span> (<span class="id">apellido</span> <span class="kw">ASC</span>);
+
+<span class="cm">-- Índice único</span>
+<span class="kw">CREATE UNIQUE INDEX</span> <span class="id">schema.idx_ci</span>
+  <span class="kw">ON</span> <span class="id">schema.Empleado</span> (<span class="id">ci</span>);
+
+<span class="cm">-- Índice clustering</span>
+<span class="kw">CREATE INDEX</span> <span class="id">schema.idx_fecha_cluster</span>
+  <span class="kw">ON</span> <span class="id">schema.Pedido</span> (<span class="id">fecha</span> <span class="kw">ASC</span>)
+  <span class="kw">CLUSTER</span>;
+
+<span class="cm">-- Índice compuesto (prefijo izquierdo: departamento)</span>
+<span class="kw">CREATE INDEX</span> <span class="id">schema.idx_dep_sal</span>
+  <span class="kw">ON</span> <span class="id">schema.Empleado</span> (<span class="id">departamento</span>, <span class="id">salario</span>);
+
+<span class="cm">-- Índice con INCLUDE COLUMNS (para Index Only Access)</span>
+<span class="kw">CREATE INDEX</span> <span class="id">schema.idx_dep_inc</span>
+  <span class="kw">ON</span> <span class="id">schema.Empleado</span> (<span class="id">departamento</span>)
+  <span class="kw">INCLUDE</span> (<span class="id">nombre</span>, <span class="id">salario</span>);
+
+<span class="cm">-- Índice sobre expresión (case-insensitive search)</span>
+<span class="kw">CREATE INDEX</span> <span class="id">schema.idx_upper_apellido</span>
+  <span class="kw">ON</span> <span class="id">schema.Empleado</span> (<span class="fn">UPPER</span>(<span class="id">apellido</span>));
+
+<span class="cm">-- Eliminar un índice</span>
+<span class="kw">DROP INDEX</span> <span class="id">schema.idx_apellido</span>;
+
+<span class="cm">-- Actualizar estadísticas (fundamental para el optimizador)</span>
+<span class="fn">RUNSTATS</span> <span class="kw">ON TABLE</span> <span class="id">schema.Empleado</span>
+  <span class="kw">WITH DISTRIBUTION AND INDEXES ALL</span>;
+
+<span class="cm">-- Reorganizar tabla para recuperar clustering</span>
+<span class="fn">REORG TABLE</span> <span class="id">schema.Empleado</span>;</code></pre>
+</div>
+
+<!-- SECCIÓN 7: RELACIÓN CON DISEÑO -->
+<div class="section" id="s7">
+  <div class="section-label">
+    <span class="section-num">07</span>
+    <span class="section-title">Relación con el Diseño Lógico y la Normalización</span>
+  </div>
+
+  <p>La indexación no existe de forma aislada — es la consecuencia natural de un buen diseño previo. El material del curso establece una cadena directa entre el Diseño Lógico y las decisiones de indexación en el Diseño Físico.</p>
+
+  <div class="two-col">
+    <div class="col-box">
+      <div class="col-box-title blue">PK → índice automático</div>
+      <ul>
+        <li>Al definir una PK, Db2 crea automáticamente un índice UNIQUE.</li>
+        <li>El curso establece: <em>"los DBMS indexan la clave primaria"</em>.</li>
+        <li>Por eso se prefieren PKs simples: menor overhead de mantenimiento.</li>
+      </ul>
+    </div>
+    <div class="col-box">
+      <div class="col-box-title blue">FK → candidatos a índice</div>
+      <ul>
+        <li>Las FK participan en cada JOIN entre tablas relacionadas.</li>
+        <li>Un índice en la FK del lado "N" puede cambiar el costo de JOIN de O(n·m) a O(n·log m).</li>
+        <li>Db2 NO crea índices en FK automáticamente — es responsabilidad del DBA.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <span class="callout-label">Normalización e índices</span>
+    La normalización reduce la redundancia pero puede incrementar la cantidad de JOINs necesarios. Los índices en las FK compensan ese costo adicional. Un modelo bien normalizado + índices bien diseñados = el balance óptimo entre integridad y rendimiento.
+  </div>
+
+  <div class="callout callout-def">
+    <span class="callout-label">Herramienta Db2: Design Advisor</span>
+    Db2 incluye el <strong>Design Advisor</strong> (<code class="inline">db2advis</code>), una herramienta que analiza un workload de consultas reales y recomienda automáticamente qué índices, MQTs (Materialized Query Tables) y particionamientos crear para optimizar ese workload específico.
+  </div>
+
+  <div class="source">Material del curso — BDII_ML_01 Diseño Lógico. IBM Db2 11.5 Documentation — "db2advis - Design Advisor command".</div>
+</div>
+
+</div><!-- /container -->
+
 <footer>
-  Indexación de Consultas SQL · Bases de Datos II · Oral de preparación<br>
-  Fuentes: Silberschatz et al. (2019) · Ramakrishnan &amp; Gehrke (2003) · Material del curso BDII
+  Indexación y Optimización de Consultas SQL · IBM Db2 · Bases de Datos II<br>
+  Fuentes: IBM Db2 11.5 Knowledge Center · IBM Redbooks DB2 Performance Tuning · Silberschatz et al. Database System Concepts · Material del curso BDII
 </footer>
 
 </body>
